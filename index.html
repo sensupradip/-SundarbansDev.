@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Sundarbans - Mangrove Delta & Tiger Conservation Dashboard</title>
+  <meta name="description" content="An interactive conservation policy simulation portal monitoring Bengal Tiger populations, mangrove density, salinity impacts, and community initiatives in the Sundarbans.">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Chart.js CDN for Simulation Graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Dashboard Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="section-sundarbans">
+
+  <!-- Main Dashboard Header -->
+  <header>
+    <div class="header-brand">
+      <h1>Dev Sundarbans</h1>
+      <p>Ecological Monitoring & Bengal Tiger Conservation Simulation Model</p>
+    </div>
+    
+    <!-- Scenario Presets -->
+    <div class="presets-row" aria-label="Conservation Scenarios Presets">
+      <span class="presets-title"><i class="fas fa-seedling"></i> Strategy Presets:</span>
+      <button class="preset-btn active" id="preset-baseline" aria-label="Baseline Strategy">Baseline</button>
+      <button class="preset-btn" id="preset-high-protection" aria-label="High Protection Strategy">Max Protection</button>
+      <button class="preset-btn" id="preset-tourism-focus" aria-label="Ecotourism Focus Strategy">Eco-Tourism</button>
+      <button class="preset-btn" id="preset-balanced" aria-label="Balanced Conservation Strategy">Balanced Mix</button>
+    </div>
+  </header>
+
+  <!-- Grid Layout -->
+  <div class="dashboard-grid">
+    
+    <!-- Sidebar Sliders Panel -->
+    <aside class="sidebar-panel" aria-label="Simulation Settings">
+      
+      <!-- Group 1: Conservation Actions -->
+      <h2 class="sidebar-group-title">Conservation Actions</h2>
+      
+      <div class="control-wrapper">
+        <div class="control-header">
+          <label for="slider-patrols" class="control-label">Anti-Poaching Patrols</label>
+          <span class="control-val" id="lbl-patrols">15%</span>
+        </div>
+        <input type="range" id="slider-patrols" min="5" max="100" value="15" aria-valuemin="5" aria-valuemax="100" aria-valuenow="15">
+      </div>
+
+      <div class="control-wrapper">
+        <div class="control-header">
+          <label for="slider-replanting" class="control-label">Mangrove Replanting</label>
+          <span class="control-val" id="lbl-replanting">10%</span>
+        </div>
+        <input type="range" id="slider-replanting" min="0" max="100" value="10" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10">
+      </div>
+
+      <div class="control-wrapper">
+        <div class="control-header">
+          <label for="slider-incentives" class="control-label">Community Incentives</label>
+          <span class="control-val" id="lbl-incentives">15%</span>
+        </div>
+        <input type="range" id="slider-incentives" min="0" max="100" value="15" aria-valuemin="0" aria-valuemax="100" aria-valuenow="15">
+      </div>
+
+      <!-- Group 2: Eco-Tourism Policies -->
+      <h2 class="sidebar-group-title">Eco-Tourism Regulation</h2>
+
+      <div class="control-wrapper">
+        <div class="control-header">
+          <label for="slider-visitor-cap" class="control-label">Ecotourist Cap</label>
+          <span class="control-val" id="lbl-visitor-cap">20%</span>
+        </div>
+        <input type="range" id="slider-visitor-cap" min="5" max="100" value="20" aria-valuemin="5" aria-valuemax="100" aria-valuenow="20">
+      </div>
+
+      <!-- Group 3: Environmental Factors -->
+      <h2 class="sidebar-group-title">Environmental Drivers</h2>
+
+      <div class="control-wrapper">
+        <div class="control-header">
+          <label for="slider-salinity" class="control-label">Delta Salinity Level</label>
+          <span class="control-val" id="lbl-salinity">12 PPT</span>
+        </div>
+        <input type="range" id="slider-salinity" min="2" max="45" value="12" aria-valuemin="2" aria-valuemax="45" aria-valuenow="12">
+      </div>
+
+      <div class="control-wrapper">
+        <div class="control-header">
+          <label for="slider-sealevel" class="control-label">Sea Level Offset</label>
+          <span class="control-val" id="lbl-sealevel">+5 cm</span>
+        </div>
+        <input type="range" id="slider-sealevel" min="0" max="50" value="5" aria-valuemin="0" aria-valuemax="50" aria-valuenow="5">
+      </div>
+
+    </aside>
+
+    <!-- Main Board Area -->
+    <main class="main-dashboard-view">
+      
+      <!-- Key Conservation KPIs -->
+      <section class="kpi-panel" aria-label="Conservation Dashboard Indicators">
+        
+        <article class="kpi-card">
+          <div class="kpi-icon tiger"><i class="fas fa-paw"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-title">Bengal Tiger Index</span>
+            <div class="kpi-value" id="kpi-tiger-pop">--</div>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-icon canopy"><i class="fas fa-tree"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-title">Mangrove Canopy Cover</span>
+            <div class="kpi-value" id="kpi-canopy-cover">--</div>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-icon poaching"><i class="fas fa-crosshairs"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-title">Poaching Incidents</span>
+            <div class="kpi-value" id="kpi-poaching-incidents">--</div>
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-icon revenue"><i class="fas fa-dollar-sign"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-title">Ecotourism Valuation</span>
+            <div class="kpi-value" id="kpi-eco-revenue">--</div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Delta Map Grid -->
+      <section class="map-grid-section" aria-label="Sundarbans Zone Explorer">
+        
+        <!-- Delta Map -->
+        <article class="map-card glass-panel">
+          <div class="map-header">
+            <h3>Sundarbans Delta Zone Map</h3>
+            <div class="map-legend">
+              <span class="legend-dot active"></span> Active Node
+              <span class="legend-dot buffer"></span> Core Area
+            </div>
+          </div>
+          
+          <div class="svg-map-wrapper">
+            <!-- Stylized Sundarbans Estuary Map -->
+            <svg viewBox="0 0 500 320" class="sundarbans-svg-map">
+              <!-- Animated River Flow Background Paths -->
+              <path d="M 80,0 Q 120,80 100,160 T 130,320" class="river-flow-path"></path>
+              <path d="M 220,0 Q 180,100 240,200 T 200,320" class="river-flow-path"></path>
+              <path d="M 380,0 Q 320,120 360,220 T 330,320" class="river-flow-path"></path>
+              <path d="M 0,150 Q 150,130 300,160 T 500,140" class="river-flow-path"></path>
+
+              <!-- Delta Core Islands/Polygons -->
+              <path d="M 20,40 L 70,30 L 80,90 L 30,85 Z" class="delta-island-path" id="island-west"></path>
+              <path d="M 120,40 L 170,25 L 180,100 L 110,80 Z" class="delta-island-path" id="island-mid-north"></path>
+              <path d="M 100,120 L 160,110 L 170,180 L 120,190 Z" class="delta-island-path" id="island-mid-south"></path>
+              <path d="M 240,40 L 310,25 L 290,110 L 230,95 Z" class="delta-island-path" id="island-east-north"></path>
+              <path d="M 230,130 L 280,135 L 270,210 L 220,200 Z" class="delta-island-path" id="island-east-south"></path>
+
+              <!-- Interactive State Nodes -->
+              <!-- Sajnakhali -->
+              <circle cx="140" cy="65" r="10" class="zone-interactive-node" data-zone="sajnakhali" aria-label="Sajnakhali Sanctuary Node"></circle>
+              <!-- Sudhanyakhali -->
+              <circle cx="130" cy="150" r="10" class="zone-interactive-node" data-zone="sudhanyakhali" aria-label="Sudhanyakhali Camp Node"></circle>
+              <!-- Dobanki -->
+              <circle cx="265" cy="65" r="10" class="zone-interactive-node" data-zone="dobanki" aria-label="Dobanki Canopy Node"></circle>
+              <!-- Netidhopani -->
+              <circle cx="250" cy="170" r="10" class="zone-interactive-node" data-zone="netidhopani" aria-label="Netidhopani Ruins Node"></circle>
+            </svg>
+          </div>
+          <div id="ne-map-tooltip"></div>
+        </article>
+
+        <!-- Selected Node Details -->
+        <article class="zone-details-card glass-panel">
+          <div class="details-placeholder" id="zone-details-placeholder">
+            <i class="fas fa-shield-alt"></i>
+            <p>Click on any pulsing radar node on the Delta Map to view site-specific tiger counts, patrol updates, and biodiversity profiles.</p>
+          </div>
+
+          <div id="zone-stats-container" style="display: none;">
+            <div class="zone-header">
+              <h3 id="lbl-zone-title">Zone Name</h3>
+              <span id="lbl-zone-type">Core Area</span>
+            </div>
+            
+            <p class="zone-description" id="lbl-zone-desc">Details text goes here.</p>
+            
+            <div class="zone-meta-grid">
+              <div class="zone-meta-box">
+                <span class="meta-label">Est. Tigers</span>
+                <span class="meta-val" id="lbl-zone-tigers">--</span>
+              </div>
+              <div class="zone-meta-box">
+                <span class="meta-label">Mangrove Density</span>
+                <span class="meta-val" id="lbl-zone-density">--</span>
+              </div>
+              <div class="zone-meta-box full-width">
+                <span class="meta-label">Dominant Mangrove Species</span>
+                <span class="meta-val" id="lbl-zone-species">--</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Detailed Visualizer Tabs -->
+      <section class="tabbed-visualizer" aria-label="Detailed Simulation Visualizer">
+        
+        <nav class="tab-selectors" aria-label="Visualizer Tabs Navigation">
+          <button class="ne-tab-btn active" aria-controls="tab-ne-prod">Population & Ecology</button>
+          <button class="ne-tab-btn" aria-controls="tab-ne-split">Delta Livelihoods</button>
+          <button class="ne-tab-btn" aria-controls="tab-ne-logistics">Logistics & Patrol Flows</button>
+        </nav>
+
+        <!-- Tab 1: Charts -->
+        <article class="ne-tab-content active" id="tab-ne-prod">
+          
+          <div class="prod-numeric-metrics" style="display: none;">
+            <!-- Hidden inputs so app.js code executes smoothly if it attempts to query these -->
+            <div id="prod-ne-fish"></div>
+            <div id="prod-ne-crops"></div>
+            <div id="prod-ne-livestock"></div>
+          </div>
+
+          <div class="tab-panels-grid">
+            <div class="chart-card glass-panel">
+              <h4><i class="fas fa-chart-line"></i> Population Trend (10-Year Estimate)</h4>
+              <div class="chart-wrapper">
+                <canvas id="neProdChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card glass-panel">
+              <h4><i class="fas fa-chart-bar"></i> Mangrove Species vs Salinity</h4>
+              <div class="chart-wrapper">
+                <canvas id="neFarmingChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Tab 2: Secondary Yield Splits (Adapted to Honey, Crab farming, and community micro-loans) -->
+        <article class="ne-tab-content" id="tab-ne-split">
+          <div class="split-sections-grid">
+            
+            <!-- Honey split -->
+            <div class="split-card glass-panel">
+              <h4><i class="fas fa-cheese"></i> Wild Honey Harvest</h4>
+              <div class="split-stats-list">
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Raw Honey Yield</span>
+                  <span class="split-stat-val" id="dairy-yield-milk">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Wax Wax Products</span>
+                  <span class="split-stat-val" id="dairy-yield-chhurpi">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Organic Honey Export</span>
+                  <span class="split-stat-val" id="dairy-yield-ghee">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Community Profit Share</span>
+                  <span class="split-stat-val" id="dairy-yield-paneer">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sustainable Aquaculture (Crabs, Shrimps) -->
+            <div class="split-card glass-panel">
+              <h4><i class="fas fa-fish"></i> Sustainable Aquaculture</h4>
+              <div class="split-stats-list">
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Crab Fattening Yield</span>
+                  <span class="split-stat-val" id="piggery-yield-pork">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Annual Crab Revenue</span>
+                  <span class="split-stat-val revenue" id="piggery-revenue-pork">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Black Tiger Shrimp Yield</span>
+                  <span class="split-stat-val" id="goatery-yield-mutton">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Shrimp Revenue</span>
+                  <span class="split-stat-val revenue" id="goatery-revenue-mutton">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ecotourism Splits -->
+            <div class="split-card glass-panel">
+              <h4><i class="fas fa-binoculars"></i> Eco-Tourism Details</h4>
+              <div class="split-stats-list">
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Annual Tourist Footfall</span>
+                  <span class="split-stat-val" id="tourism-val-footfall">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Tourism Revenue</span>
+                  <span class="split-stat-val revenue" id="tourism-val-revenue">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Local Guides Employed</span>
+                  <span class="split-stat-val" id="tourism-val-artisans">--</span>
+                </div>
+                <div class="split-stat-item">
+                  <span class="split-stat-label">Nature Camps Revenue</span>
+                  <span class="split-stat-val revenue" id="tourism-val-crafts-rev">--</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- Tab 3: Logistics, Spoilage and SVG flows -->
+        <article class="ne-tab-content" id="tab-ne-logistics">
+          <div class="tab-panels-grid">
+            
+            <div class="logistics-card glass-panel">
+              <h4><i class="fas fa-shipping-fast"></i> Patrol Metrics & Spoilage</h4>
+              <div class="logistics-progress-group">
+                <div class="progress-item-wrapper">
+                  <div class="progress-header">
+                    <span class="progress-label">Forest Loss Rate</span>
+                    <span class="progress-percentage" id="logistics-spoilage">--</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="logistics-spoilage-bar"></div>
+                  </div>
+                </div>
+
+                <div class="progress-item-wrapper">
+                  <div class="progress-header">
+                    <span class="progress-label">Patrol Speed & Cover</span>
+                    <span class="progress-percentage" id="logistics-efficiency">--</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="logistics-efficiency-bar"></div>
+                  </div>
+                </div>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-dim);">
+                *Anti-poaching patrols cover core zones via custom speedboats. Replanting mangroves strengthens soil integrity, reducing sea-level logging erosion.
+              </p>
+            </div>
+
+            <!-- Animated SVG Patrol pipelines -->
+            <div class="pipeline-card glass-panel">
+              <h4><i class="fas fa-route"></i> Live Patrol Boat Dashboard</h4>
+              <div class="pipeline-svg-wrapper">
+                <svg viewBox="0 0 400 120" style="width: 100%; height: 100%;">
+                  <!-- Dash paths -->
+                  <path d="M 50,60 L 200,60" class="flow-path-line"></path>
+                  <path d="M 200,60 L 350,60" class="flow-path-line"></path>
+                  
+                  <circle cx="50" cy="60" r="22" class="pipeline-node hub"></circle>
+                  <text x="50" y="64" class="node-txt">STATION</text>
+                  
+                  <circle cx="200" cy="60" r="22" class="pipeline-node hub"></circle>
+                  <text x="200" y="64" class="node-txt">BUFFERS</text>
+                  
+                  <circle cx="350" cy="60" r="22" class="pipeline-node market"></circle>
+                  <text x="350" y="64" class="node-txt">CORES</text>
+                </svg>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Strategic Policy Development Framework -->
+      <section class="framework-card glass-panel" aria-label="Policy Investment Framework">
+        <h3><i class="fas fa-university"></i> Strategic Policy Framework</h3>
+        <div class="framework-metrics-grid">
+          
+          <div class="framework-box">
+            <div class="framework-label">Speedboats Deployed</div>
+            <div class="framework-value" id="framework-val-infra">--</div>
+          </div>
+
+          <div class="framework-box">
+            <div class="framework-label">Patrol Livelihoods</div>
+            <div class="framework-value" id="framework-val-jobs">--</div>
+          </div>
+
+          <div class="framework-box">
+            <div class="framework-label">Carbon Credit Valuation</div>
+            <div class="framework-value" id="framework-val-exports">--</div>
+          </div>
+
+          <div class="framework-box">
+            <div class="framework-label">NGO Partnership Funding</div>
+            <div class="framework-value" id="framework-val-ppp">--</div>
+          </div>
+
+          <div class="framework-box">
+            <div class="framework-label">Policy Budget Required</div>
+            <div class="framework-value" id="framework-val-total-inv">--</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Simulation Core Nodes -->
+      <div style="display: none;">
+        <!-- Elements mapped in app.js for simulation inputs -->
+        <div id="slider-ne-water"></div>
+        <div id="slider-ne-land"></div>
+        <div id="slider-ne-integrated"></div>
+        <div id="slider-ne-breeds"></div>
+        <div id="slider-ne-irrigation"></div>
+        <div id="slider-ne-cold"></div>
+        <div id="slider-ne-transport"></div>
+        <div id="slider-ne-tourism"></div>
+        <div id="slider-ne-crafts"></div>
+        
+        <div id="lbl-ne-water"></div>
+        <div id="lbl-ne-land"></div>
+        <div id="lbl-ne-integrated"></div>
+        <div id="lbl-ne-breeds"></div>
+        <div id="lbl-ne-irrigation"></div>
+        <div id="lbl-ne-cold"></div>
+        <div id="lbl-ne-transport"></div>
+        <div id="lbl-ne-tourism"></div>
+        <div id="lbl-ne-crafts"></div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- App Simulation Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
