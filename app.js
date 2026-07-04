@@ -1,41 +1,21 @@
 /**
- * Dev Sundarbans - Delta & Tiger Conservation Policy Simulation Engine
+ * Project Development Sundarbans - Mangrove Restoration & Delta Resilience Simulation Model
  * Wrapped in an IIFE to protect scope and prevent naming collisions.
  */
 (function() {
-  // Ecological Zone specific resource data for the Sundarbans core and buffer zones
-  const zoneData = {
-    "Sajnakhali Sanctuary": {
-      focus: "Wildlife Refuge & Core Breeding Reserve",
-      desc: "One of the most critical bird sanctuaries and tiger nesting zones. Heavy riverine patrols are required due to proximity to human settlements.",
-      water: "Area: 362 sq km (mangrove mudflats, estuaries)",
-      systems: "Watchtowers, crocodile breeding ponds, nature trails",
-      species: "Bengal Tiger, Estuarine Crocodile, River Terrapin, Spotted Deer",
-      baseProd: 34 // Baseline Tiger Index
+  // Zone description data for interactive map clicks
+  const zoneDetails = {
+    "sb-zone-inhabited": {
+      title: "Inhabited Transition Zone",
+      desc: "Home to over 4.5 million delta residents across islands like Sagar and Gosaba. This area faces immediate climate vulnerability from embankment breaches, storm surges, and groundwater salinization. Strategic priorities here focus on off-grid solar microgrid deployment, geotextile embankment reinforcement, and saline-resistant crop cultivation."
     },
-    "Sudhanyakhali Camp": {
-      focus: "Sweetwater Pond Monitor & Tiger Observation Core",
-      desc: "Centered around an artificial freshwater pond that attracts tigers. Heavily monitored watchtower checkpoint with high ecotourism footfalls.",
-      water: "Area: 120 sq km (mangrove cover, mud creeks)",
-      systems: "Sweetwater retention tank, visitor observation paths",
-      species: "Bengal Tiger, Wild Boar, Rhesus Macaque, Monitor Lizard",
-      baseProd: 22
+    "sb-zone-buffer": {
+      title: "Socio-Ecological Buffer Zone",
+      desc: "A restricted entry zone characterized by intermediate mangrove density and tidal channels. It acts as a critical buffer between human settlements and the wild core. Development efforts here are focused on sustainable livelihood generation like community honey cooperatives and non-invasive crab fattening farms to prevent forest trespassing."
     },
-    "Dobanki Canopy": {
-      focus: "Canopy Walk & Aerial Wildlife Corridor",
-      desc: "Features a half-kilometer long fenced canopy walk 20 feet above ground level. Ideal for observing arboreal species and tiger track paths.",
-      water: "Area: 180 sq km (inter-tidal delta channels)",
-      systems: "Fenced canopy walkway, anti-poaching boat post",
-      species: "Bengal Tiger, Chital, King Cobra, Lesser Adjutant Stork",
-      baseProd: 18
-    },
-    "Netidhopani Ruins": {
-      focus: "Historical Ruins & Border Security Buffer Zone",
-      desc: "Home to the ruins of a 400-year-old temple. Serves as a key delta buffer zone adjacent to open sea gates, requiring high-alert coastguard coordination.",
-      water: "Area: 240 sq km (exposed sand beaches, open estuaries)",
-      systems: "Patrol watchtower, coastal weather monitoring station",
-      species: "Bengal Tiger, Fiddler Crab, Mudskipper, Snapping Shrimp",
-      baseProd: 28
+    "sb-zone-core": {
+      title: "Sundarbans Core Biosphere Reserve",
+      desc: "A strictly protected sanctuary containing pristine mangrove forests and the primary habitat of the Royal Bengal Tiger. Crucial for massive carbon sequestration and storm wind attenuation. Policy goals emphasize strict smart conservation patrols, human-wildlife fences, and complete restoration of degraded forest margins."
     }
   };
 
@@ -48,79 +28,72 @@
     // Cache DOM Elements
     elements = {
       section: document.getElementById("section-sundarbans"),
-      sliderWater: document.getElementById("slider-patrols"),
-      sliderLand: document.getElementById("slider-replanting"),
-      sliderIntegrated: document.getElementById("slider-incentives"),
-      sliderBreeds: document.getElementById("slider-visitor-cap"),
-      sliderIrrigation: document.getElementById("slider-salinity"),
-      sliderCold: document.getElementById("slider-sealevel"),
       
-      lblWater: document.getElementById("lbl-patrols"),
-      lblLand: document.getElementById("lbl-replanting"),
-      lblIntegrated: document.getElementById("lbl-incentives"),
-      lblBreeds: document.getElementById("lbl-visitor-cap"),
-      lblIrrigation: document.getElementById("lbl-salinity"),
-      lblCold: document.getElementById("lbl-sealevel"),
+      // Sliders
+      sliderMangroves: document.getElementById("slider-sb-mangroves"),
+      sliderEmbankments: document.getElementById("slider-sb-embankments"),
+      sliderLivelihoods: document.getElementById("slider-sb-livelihoods"),
+      sliderSolar: document.getElementById("slider-sb-solar"),
+      sliderConservation: document.getElementById("slider-sb-conservation"),
       
-      prodFish: document.getElementById("prod-ne-fish"),
-      prodCrops: document.getElementById("prod-ne-crops"),
-      prodLivestock: document.getElementById("prod-ne-livestock"),
+      // Slider Labels
+      lblMangroves: document.getElementById("lbl-sb-mangroves"),
+      lblEmbankments: document.getElementById("lbl-sb-embankments"),
+      lblLivelihoods: document.getElementById("lbl-sb-livelihoods"),
+      lblSolar: document.getElementById("lbl-sb-solar"),
+      lblConservation: document.getElementById("lbl-sb-conservation"),
       
-      // Secondary splits
-      dairyYieldMilk: document.getElementById("dairy-yield-milk"),
-      dairyYieldChhurpi: document.getElementById("dairy-yield-chhurpi"),
-      dairyYieldGhee: document.getElementById("dairy-yield-ghee"),
-      dairyYieldPaneer: document.getElementById("dairy-yield-paneer"),
+      // Preset Buttons
+      btnBaseline: document.getElementById("scenario-sb-baseline"),
+      btnEcoFocus: document.getElementById("scenario-sb-eco-focus"),
+      btnInfra: document.getElementById("scenario-sb-infrastructure"),
+      btnBalanced: document.getElementById("scenario-sb-balanced"),
       
-      piggeryYieldPork: document.getElementById("piggery-yield-pork"),
-      piggeryRevenuePork: document.getElementById("piggery-revenue-pork"),
-      goateryYieldMutton: document.getElementById("goatery-yield-mutton"),
-      goateryRevenueMutton: document.getElementById("goatery-revenue-mutton"),
+      // Map SVG Elements
+      mapPaths: document.querySelectorAll(".sb-zone-path"),
+      embankmentLeft: document.getElementById("sb-embankment-line-left"),
+      embankmentRight: document.getElementById("sb-embankment-line-right"),
+      solarNodes: [
+        document.getElementById("sb-solar-node-1"),
+        document.getElementById("sb-solar-node-2"),
+        document.getElementById("sb-solar-node-3")
+      ],
+      mapTooltip: document.getElementById("sb-map-tooltip"),
       
-      tourismFootfall: document.getElementById("tourism-val-footfall"),
-      tourismRevenue: document.getElementById("tourism-val-revenue"),
-      tourismArtisans: document.getElementById("tourism-val-artisans"),
-      tourismCraftsRev: document.getElementById("tourism-val-crafts-rev"),
+      // Map Info Output
+      zoneTitle: document.getElementById("sb-zone-title"),
+      zoneDesc: document.getElementById("sb-zone-desc"),
       
-      spoilage: document.getElementById("logistics-spoilage"),
-      spoilageBar: document.getElementById("logistics-spoilage-bar"),
-      efficiency: document.getElementById("logistics-efficiency"),
-      efficiencyBar: document.getElementById("logistics-efficiency-bar"),
+      // Tabs
+      tabButtons: document.querySelectorAll(".sb-tab-btn"),
+      tabContents: document.querySelectorAll(".sb-tab-content"),
       
-      frameworkValJobs: document.getElementById("framework-val-jobs"),
-      frameworkValExports: document.getElementById("framework-val-exports"),
-      frameworkValInfra: document.getElementById("framework-val-infra"),
-      frameworkValPpp: document.getElementById("framework-val-ppp"),
-      frameworkValTotalInv: document.getElementById("framework-val-total-inv"),
+      // Impact Metric Values
+      valCarbon: document.getElementById("impact-sb-carbon"),
+      trendCarbon: document.getElementById("trend-sb-carbon"),
+      valResilience: document.getElementById("impact-sb-resilience"),
+      barResilience: document.getElementById("bar-sb-resilience"),
+      trendResilience: document.getElementById("trend-sb-resilience"),
+      valTigers: document.getElementById("impact-sb-tigers"),
+      trendTigers: document.getElementById("trend-sb-tigers"),
+      valLivelihoods: document.getElementById("impact-sb-livelihoods"),
+      trendLivelihoods: document.getElementById("trend-sb-livelihoods"),
+      valRevenue: document.getElementById("impact-sb-revenue"),
+      trendRevenue: document.getElementById("trend-sb-revenue"),
+      valSolar: document.getElementById("impact-sb-solar"),
+      barSolar: document.getElementById("bar-sb-solar"),
+      trendSolar: document.getElementById("trend-sb-solar"),
       
-      // Core KPIs
-      kpiTigerPop: document.getElementById("kpi-tiger-pop"),
-      kpiCanopyCover: document.getElementById("kpi-canopy-cover"),
-      kpiPoaching: document.getElementById("kpi-poaching-incidents"),
-      kpiEcoRevenue: document.getElementById("kpi-eco-revenue"),
-      
-      // Zone panel elements
-      zoneTitle: document.getElementById("lbl-zone-title"),
-      zoneType: document.getElementById("lbl-zone-type"),
-      zoneDesc: document.getElementById("lbl-zone-desc"),
-      zoneStatsContainer: document.getElementById("zone-stats-container"),
-      zonePlaceholder: document.getElementById("zone-details-placeholder"),
-      statTigers: document.getElementById("lbl-zone-tigers"),
-      statDensity: document.getElementById("lbl-zone-density"),
-      statSpecies: document.getElementById("lbl-zone-species"),
-      
-      mapPaths: document.querySelectorAll(".zone-interactive-node"),
-      mapTooltip: document.getElementById("ne-map-tooltip"),
-      
-      tabButtons: document.querySelectorAll(".ne-tab-btn"),
-      tabContents: document.querySelectorAll(".ne-tab-content"),
-      
-      scenarioBaseline: document.getElementById("preset-baseline"),
-      scenarioLocal: document.getElementById("preset-high-protection"),
-      scenarioExport: document.getElementById("preset-tourism-focus"),
-      scenarioOptimum: document.getElementById("preset-balanced"),
-      
-      logisticsPaths: document.querySelectorAll(".flow-path-line")
+      // Showcase details values
+      showcaseHoneyCollectors: document.getElementById("sb-honey-collectors"),
+      showcaseHoneyYield: document.getElementById("sb-honey-yield"),
+      showcaseHoneyPrice: document.getElementById("sb-honey-price"),
+      showcaseCrabCoops: document.getElementById("sb-crab-coops"),
+      showcaseCrabOutput: document.getElementById("sb-crab-output"),
+      showcaseCrabRevenue: document.getElementById("sb-crab-revenue"),
+      showcasePaddyArea: document.getElementById("sb-paddy-area"),
+      showcasePaddyYield: document.getElementById("sb-paddy-yield"),
+      showcasePaddyTolerance: document.getElementById("sb-paddy-tolerance")
     };
 
     if (!elements.section) return; // Guard clause
@@ -136,28 +109,32 @@
 
     // Run Initial Simulation
     runSimulation();
+
+    // Listen for tabChange custom events from main portal app.js
+    window.addEventListener("tabChange", (e) => {
+      if (e.detail.activeTab === "sundarbans") {
+        setTimeout(() => {
+          if (charts.resilience) charts.resilience.update();
+          if (charts.species) charts.species.update();
+        }, 100);
+      }
+    });
   }
 
   // Setup sliders event listeners
   function setupSliders() {
     const sliders = [
-      { slider: elements.sliderWater, lbl: elements.lblWater, suffix: "%" },
-      { slider: elements.sliderLand, lbl: elements.lblLand, suffix: "%" },
-      { slider: elements.sliderIntegrated, lbl: elements.lblIntegrated, suffix: "%" },
-      { slider: elements.sliderBreeds, lbl: elements.lblBreeds, suffix: "%" },
-      { slider: elements.sliderIrrigation, lbl: elements.lblIrrigation, suffix: " PPT" },
-      { slider: elements.sliderCold, lbl: elements.lblCold, suffix: " cm" }
+      { slider: elements.sliderMangroves, lbl: elements.lblMangroves, suffix: "%" },
+      { slider: elements.sliderEmbankments, lbl: elements.lblEmbankments, suffix: "%" },
+      { slider: elements.sliderLivelihoods, lbl: elements.lblLivelihoods, suffix: "%" },
+      { slider: elements.sliderSolar, lbl: elements.lblSolar, suffix: "%" },
+      { slider: elements.sliderConservation, lbl: elements.lblConservation, suffix: "%" }
     ];
 
     sliders.forEach(item => {
       if (item.slider) {
         item.slider.addEventListener("input", (e) => {
-          let val = e.target.value;
-          if (item.slider === elements.sliderCold) {
-            item.lbl.textContent = "+" + val + item.suffix;
-          } else {
-            item.lbl.textContent = val + item.suffix;
-          }
+          item.lbl.textContent = e.target.value + item.suffix;
           runSimulation();
           clearScenarioActiveStates();
         });
@@ -165,47 +142,50 @@
     });
   }
 
-  // Setup Tab control
+  // Setup Visualizer tab button controls
   function setupTabButtons() {
     elements.tabButtons.forEach(btn => {
       btn.addEventListener("click", (e) => {
         const activeTabId = e.currentTarget.getAttribute("aria-controls");
         
-        elements.tabButtons.forEach(b => b.classList.remove("active"));
+        elements.tabButtons.forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
         elements.tabContents.forEach(c => c.classList.remove("active"));
         
         e.currentTarget.classList.add("active");
+        e.currentTarget.setAttribute("aria-selected", "true");
+        
         const activeContent = document.getElementById(activeTabId);
         if (activeContent) {
           activeContent.classList.add("active");
         }
         
         // Trigger Chart updates
-        if (activeTabId === "tab-ne-prod") {
+        if (activeTabId === "tab-sb-charts") {
           setTimeout(() => {
-            if (charts.prod) charts.prod.update();
-            if (charts.farming) charts.farming.update();
+            if (charts.resilience) charts.resilience.update();
+            if (charts.species) charts.species.update();
           }, 50);
         }
       });
     });
   }
 
-  // Map interactive click & hover
+  // Setup SVG map click and hover tooltips
   function setupMapInteractivity() {
     elements.mapPaths.forEach(path => {
       // Hover Tooltip
       path.addEventListener("mousemove", (e) => {
-        const zoneId = e.currentTarget.getAttribute("data-zone");
-        // Capitalize for map key matching
-        const zoneName = zoneId.charAt(0).toUpperCase() + zoneId.slice(1) + (zoneId === "netidhopani" ? " Ruins" : (zoneId === "dobanki" ? " Canopy" : (zoneId === "sajnakhali" ? " Sanctuary" : " Camp")));
-        const currentData = zoneData[zoneName];
-        if (!currentData) return;
+        const zoneId = e.currentTarget.getAttribute("id");
+        const details = zoneDetails[zoneId];
+        if (!details) return;
 
         elements.mapTooltip.style.display = "block";
-        elements.mapTooltip.style.left = (e.clientX + window.scrollX + 15) + "px";
-        elements.mapTooltip.style.top = (e.clientY + window.scrollY + 10) + "px";
-        elements.mapTooltip.innerHTML = `<strong>${zoneName}</strong><br>Base Tiger Index: ${currentData.baseProd}`;
+        elements.mapTooltip.style.left = (e.clientX + window.scrollX - elements.section.getBoundingClientRect().left + 15) + "px";
+        elements.mapTooltip.style.top = (e.clientY + window.scrollY - elements.section.getBoundingClientRect().top + 10) + "px";
+        elements.mapTooltip.innerHTML = `<strong>${details.title}</strong><br><span style="font-size: 0.75rem; color: var(--text-secondary)">Click to inspect details</span>`;
       });
 
       path.addEventListener("mouseleave", () => {
@@ -217,84 +197,62 @@
         elements.mapPaths.forEach(p => p.classList.remove("active"));
         e.currentTarget.classList.add("active");
 
-        const zoneId = e.currentTarget.getAttribute("data-zone");
-        const zoneName = zoneId.charAt(0).toUpperCase() + zoneId.slice(1) + (zoneId === "netidhopani" ? " Ruins" : (zoneId === "dobanki" ? " Canopy" : (zoneId === "sajnakhali" ? " Sanctuary" : " Camp")));
-        displayZoneDetails(zoneName);
+        const zoneId = e.currentTarget.getAttribute("id");
+        const details = zoneDetails[zoneId];
+        if (details) {
+          elements.zoneTitle.textContent = details.title;
+          elements.zoneDesc.textContent = details.desc;
+        }
       });
     });
   }
 
-  function displayZoneDetails(zoneName) {
-    const data = zoneData[zoneName];
-    if (!data) return;
-
-    elements.zoneTitle.textContent = zoneName;
-    elements.zoneType.textContent = zoneName.includes("Sanctuary") || zoneName.includes("Ruins") ? "Core Zone" : "Buffer Zone";
-    elements.zoneDesc.textContent = data.desc;
-    
-    // Scale zone-specific tigers with active anti-poaching slider
-    const patrols = parseInt(elements.sliderWater.value);
-    const scaledTigers = Math.round(data.baseProd * (0.8 + (patrols / 100) * 0.45));
-    elements.statTigers.textContent = scaledTigers;
-    
-    // Scale density with salinity slider
-    const salinity = parseInt(elements.sliderIrrigation.value);
-    const densityVal = Math.max(10, 85 - (salinity / 45) * 50);
-    elements.statDensity.textContent = densityVal.toFixed(1) + "%";
-    elements.statSpecies.textContent = data.species;
-    
-    if (elements.zonePlaceholder) {
-      elements.zonePlaceholder.style.display = "none";
-    }
-    elements.zoneStatsContainer.style.display = "block";
-  }
-
-  // Preset configuration
+  // Setup scenario presets
   function setupScenarios() {
-    if (elements.scenarioBaseline) {
-      elements.scenarioBaseline.addEventListener("click", () => {
-        setPreset(15, 10, 15, 20, 12, 5);
-        highlightScenario(elements.scenarioBaseline);
+    if (elements.btnBaseline) {
+      elements.btnBaseline.addEventListener("click", () => {
+        setPreset(10, 20, 15, 25, 20);
+        highlightScenario(elements.btnBaseline);
       });
     }
-    if (elements.scenarioLocal) {
-      elements.scenarioLocal.addEventListener("click", () => {
-        setPreset(85, 45, 65, 15, 10, 2);
-        highlightScenario(elements.scenarioLocal);
+    if (elements.btnEcoFocus) {
+      elements.btnEcoFocus.addEventListener("click", () => {
+        setPreset(85, 30, 45, 35, 90);
+        highlightScenario(elements.btnEcoFocus);
       });
     }
-    if (elements.scenarioExport) {
-      elements.scenarioExport.addEventListener("click", () => {
-        setPreset(40, 20, 30, 85, 18, 15);
-        highlightScenario(elements.scenarioExport);
+    if (elements.btnInfra) {
+      elements.btnInfra.addEventListener("click", () => {
+        setPreset(20, 90, 30, 85, 40);
+        highlightScenario(elements.btnInfra);
       });
     }
-    if (elements.scenarioOptimum) {
-      elements.scenarioOptimum.addEventListener("click", () => {
-        setPreset(60, 60, 50, 45, 12, 5);
-        highlightScenario(elements.scenarioOptimum);
+    if (elements.btnBalanced) {
+      elements.btnBalanced.addEventListener("click", () => {
+        setPreset(60, 65, 70, 75, 75);
+        highlightScenario(elements.btnBalanced);
       });
     }
+    
+    // Set initial active class on baseline button
+    if (elements.btnBaseline) elements.btnBaseline.classList.add("active");
   }
 
-  function setPreset(patrols, replanting, incentives, visitorCap, salinity, seaLevel) {
-    elements.sliderWater.value = patrols;
-    elements.lblWater.textContent = patrols + "%";
+  function setPreset(mangroves, embankments, livelihoods, solar, conservation) {
+    elements.sliderMangroves.value = mangroves;
+    elements.lblMangroves.textContent = mangroves + "%";
 
-    elements.sliderLand.value = replanting;
-    elements.lblLand.textContent = replanting + "%";
+    elements.sliderEmbankments.value = embankments;
+    elements.lblEmbankments.textContent = embankments + "%";
 
-    elements.sliderIntegrated.value = incentives;
-    elements.lblIntegrated.textContent = incentives + "%";
+    elements.sliderLivelihoods.value = livelihoods;
+    elements.lblLivelihoods.textContent = livelihoods + "%";
 
-    elements.sliderBreeds.value = visitorCap;
-    elements.lblBreeds.textContent = visitorCap + "%";
+    elements.sliderSolar.value = solar;
+    elements.lblSolar.textContent = solar + "%";
 
-    elements.sliderIrrigation.value = salinity;
-    elements.lblIrrigation.textContent = salinity + " PPT";
-
-    elements.sliderCold.value = seaLevel;
-    elements.lblCold.textContent = "+" + seaLevel + " cm";
+    elements.sliderConservation.value = conservation;
+    elements.lblConservation.textContent = conservation + "%";
 
     runSimulation();
   }
@@ -305,183 +263,222 @@
   }
 
   function clearScenarioActiveStates() {
-    if (elements.scenarioBaseline) elements.scenarioBaseline.classList.remove("active");
-    if (elements.scenarioLocal) elements.scenarioLocal.classList.remove("active");
-    if (elements.scenarioExport) elements.scenarioExport.classList.remove("active");
-    if (elements.scenarioOptimum) elements.scenarioOptimum.classList.remove("active");
+    if (elements.btnBaseline) elements.btnBaseline.classList.remove("active");
+    if (elements.btnEcoFocus) elements.btnEcoFocus.classList.remove("active");
+    if (elements.btnInfra) elements.btnInfra.classList.remove("active");
+    if (elements.btnBalanced) elements.btnBalanced.classList.remove("active");
   }
 
-  // Simulation calculations
+  // Simulation Engine Math
   function runSimulation() {
-    const patrols = parseInt(elements.sliderWater.value);
-    const replanting = parseInt(elements.sliderLand.value);
-    const incentives = parseInt(elements.sliderIntegrated.value);
-    const visitorCap = parseInt(elements.sliderBreeds.value);
-    const salinity = parseInt(elements.sliderIrrigation.value);
-    const seaLevel = parseInt(elements.sliderCold.value);
+    const mangroves = parseInt(elements.sliderMangroves.value);
+    const embankments = parseInt(elements.sliderEmbankments.value);
+    const livelihoods = parseInt(elements.sliderLivelihoods.value);
+    const solar = parseInt(elements.sliderSolar.value);
+    const conservation = parseInt(elements.sliderConservation.value);
 
-    // 1. Forest Loss / Spoilage Math
-    // Base loss rate 18%. Rises with salinity and seaLevel, reduced by replanting and incentives
-    const lossRate = Math.max(1.8, 18.0 + (salinity / 45) * 15.0 + (seaLevel / 50) * 8.0 - (replanting / 100) * 12.0 - (incentives / 100) * 5.0);
-    elements.spoilage.textContent = lossRate.toFixed(1) + "%";
-    elements.spoilageBar.style.width = lossRate.toFixed(1) + "%";
+    // 1. Carbon Sequestration
+    const carbonVal = 1.0 + (mangroves / 100) * 1.5;
+    elements.valCarbon.textContent = carbonVal.toFixed(2) + " M T/yr";
     
-    // 2. Patrol Speed & Cover / Logistics Efficiency Math
-    // Base coverage 35%. Rises with patrols and community incentives
-    const patrolCover = Math.min(98.0, 35.0 + (patrols / 100) * 45.0 + (incentives / 100) * 18.0);
-    elements.efficiency.textContent = patrolCover.toFixed(1) + "%";
-    elements.efficiencyBar.style.width = patrolCover.toFixed(1) + "%";
+    let carbonTrend = "Critical";
+    if (carbonVal > 1.3) carbonTrend = "Improving";
+    if (carbonVal > 2.0) carbonTrend = "Optimal";
+    elements.trendCarbon.textContent = carbonTrend;
+    elements.trendCarbon.className = "trend-badge " + (carbonTrend === "Critical" ? "badge-orange" : carbonTrend === "Improving" ? "badge-blue" : "badge-green");
 
-    // Speed up patrol dashes flow
-    adjustLogisticsAnimationSpeed(patrols);
+    // 2. Resilience Index
+    const resilienceVal = Math.min(98, 25 + (mangroves / 100) * 40 + (embankments / 100) * 33);
+    elements.valResilience.textContent = Math.round(resilienceVal) + "%";
+    elements.barResilience.style.width = resilienceVal + "%";
 
-    // 3. Core KPIs Calculation
-    // Tiger Index (Base 102). Rises with patrols and community protection, drops with high visitors/poaching
-    const poachingRisk = Math.max(0.5, 45.0 - (patrols / 100) * 35.0 - (incentives / 100) * 10.0);
-    const tigerIndex = Math.round(102 * (0.6 + (patrols / 100) * 0.45 + (incentives / 100) * 0.15 - (poachingRisk / 45) * 0.25));
-    elements.kpiTigerPop.textContent = tigerIndex;
-    elements.kpiPoaching.textContent = Math.round(poachingRisk) + " /yr";
+    let resilienceTrend = "Low Guard";
+    if (resilienceVal > 45) resilienceTrend = "Moderate";
+    if (resilienceVal > 75) resilienceTrend = "Highly Protected";
+    elements.trendResilience.textContent = resilienceTrend;
+    elements.trendResilience.className = "trend-badge " + (resilienceTrend === "Low Guard" ? "badge-orange" : resilienceTrend === "Moderate" ? "badge-blue" : "badge-green");
 
-    // Mangrove Cover
-    const canopyCover = Math.max(20.0, 88.0 - (salinity / 45) * 35.0 - (seaLevel / 50) * 20.0 + (replanting / 100) * 28.0);
-    elements.kpiCanopyCover.textContent = canopyCover.toFixed(1) + "%";
+    // 3. Tiger Population
+    const tigerImpact = Math.round(88 + (conservation / 100) * 22 + (mangroves / 100) * 12 - Math.max(0, (livelihoods - conservation) * 0.08));
+    elements.valTigers.textContent = tigerImpact;
 
-    // Ecotourism valuation
-    const ecoVal = (1.2 + (visitorCap / 100) * 3.8) * 125 * (patrolCover / 100);
-    elements.kpiEcoRevenue.textContent = "₹" + Math.round(ecoVal).toLocaleString() + " Cr";
+    let tigerTrend = "Vulnerable";
+    if (tigerImpact > 90) tigerTrend = "Stable";
+    if (tigerImpact > 105) tigerTrend = "Thriving";
+    elements.trendTigers.textContent = tigerTrend;
+    elements.trendTigers.className = "trend-badge " + (tigerTrend === "Vulnerable" ? "badge-orange" : tigerTrend === "Stable" ? "badge-blue" : "badge-green");
 
-    // 4. Secondary Livelihoods Splits
-    // Honey yield (kg/day)
-    const honeyYield = 280 + (canopyCover / 100) * 850;
-    const honeyWax = honeyYield * 0.12;
-    const honeyExport = honeyYield * 0.45;
-    const honeyProfit = honeyYield * 280; // Value in ₹/day
+    // 4. Livelihoods Supported
+    const livelihoodsVal = 0.5 + (livelihoods / 100) * 1.1 + (mangroves / 100) * 0.3;
+    elements.valLivelihoods.textContent = livelihoodsVal.toFixed(2) + " Lakh";
 
-    elements.dairyYieldMilk.textContent = Math.round(honeyYield).toLocaleString() + " kg/day";
-    elements.dairyYieldChhurpi.textContent = Math.round(honeyWax).toLocaleString() + " kg/day";
-    elements.dairyYieldGhee.textContent = Math.round(honeyExport).toLocaleString() + " kg/day";
-    elements.dairyYieldPaneer.textContent = "₹" + Math.round(honeyProfit).toLocaleString() + "/day";
+    let livelihoodsTrend = "Restricted";
+    if (livelihoodsVal > 0.8) livelihoodsTrend = "Growing";
+    if (livelihoodsVal > 1.4) livelihoodsTrend = "Robust";
+    elements.trendLivelihoods.textContent = livelihoodsTrend;
+    elements.trendLivelihoods.className = "trend-badge " + (livelihoodsTrend === "Restricted" ? "badge-orange" : livelihoodsTrend === "Growing" ? "badge-blue" : "badge-green");
 
-    // Sustainable Aquaculture (Crab & Shrimp)
-    const crabTons = (45 + (incentives / 100) * 180) * (canopyCover / 100);
-    const crabRevenue = crabTons * 4.5; // Lakhs
-    const shrimpTons = (120 + (incentives / 100) * 250) * (canopyCover / 100);
-    const shrimpRevenue = shrimpTons * 6.5;
+    // 5. Annual Eco-Revenue
+    const revenueVal = 30 + (conservation / 100) * 18 + (livelihoods / 100) * 22 + (mangroves / 100) * 12;
+    elements.valRevenue.textContent = "₹" + revenueVal.toFixed(1) + " Cr";
 
-    elements.piggeryYieldPork.textContent = Math.round(crabTons).toLocaleString() + " T/yr";
-    elements.piggeryRevenuePork.textContent = "₹" + Math.round(crabRevenue).toLocaleString() + " L/yr";
-    elements.goateryYieldMutton.textContent = Math.round(shrimpTons).toLocaleString() + " T/yr";
-    elements.goateryRevenueMutton.textContent = "₹" + Math.round(shrimpRevenue).toLocaleString() + " L/yr";
+    let revenueTrend = "Underfunded";
+    if (revenueVal > 45) revenueTrend = "Stable";
+    if (revenueVal > 65) revenueTrend = "Prosperous";
+    elements.trendRevenue.textContent = revenueTrend;
+    elements.trendRevenue.className = "trend-badge " + (revenueTrend === "Underfunded" ? "badge-orange" : revenueTrend === "Stable" ? "badge-blue" : "badge-green");
 
-    // Eco-tourism metrics
-    const tourists = 0.5 + (visitorCap / 100) * 3.5;
-    const touristRev = tourists * 45;
-    const guides = Math.round(150 + (visitorCap / 100) * 450 + (incentives / 100) * 200);
-    const campsRev = touristRev * 0.65;
+    // 6. Clean Energy Coverage
+    const energyVal = Math.min(99, 10 + (solar / 100) * 88);
+    elements.valSolar.textContent = energyVal.toFixed(1) + "%";
+    elements.barSolar.style.width = energyVal + "%";
 
-    elements.tourismFootfall.textContent = tourists.toFixed(1) + " Million/yr";
-    elements.tourismRevenue.textContent = "₹" + Math.round(touristRev).toLocaleString() + " Cr/yr";
-    elements.tourismArtisans.textContent = guides + " Guides";
-    elements.tourismCraftsRev.textContent = "₹" + Math.round(campsRev).toLocaleString() + " Cr/yr";
+    let energyTrend = "Unelectrified";
+    if (energyVal > 30) energyTrend = "Transitioning";
+    if (energyVal > 70) energyTrend = "Sustained Grid";
+    elements.trendSolar.textContent = energyTrend;
+    elements.trendSolar.className = "trend-badge " + (energyTrend === "Unelectrified" ? "badge-orange" : energyTrend === "Transitioning" ? "badge-blue" : "badge-green");
 
-    // 5. Framework Statistics
-    const boats = Math.round(6 + (patrols / 100) * 34);
-    const jobCreation = 120 + (patrols / 100) * 220 + (incentives / 100) * 580;
-    const carbonCredits = canopyCover * 2.8;
-    const partnershipFunding = (incentives * 12 + replanting * 15);
-    const budgetAllocation = (patrols * 8 + replanting * 18 + incentives * 10);
+    // 7. Livelihood Showcase Details
+    const honeyCollectors = Math.round(2500 + (livelihoods / 100) * 2200 + (conservation / 100) * 800);
+    if (elements.showcaseHoneyCollectors) elements.showcaseHoneyCollectors.textContent = honeyCollectors.toLocaleString() + " Collectors";
 
-    if (elements.frameworkValInfra) elements.frameworkValInfra.textContent = boats + " Boats";
-    if (elements.frameworkValJobs) elements.frameworkValJobs.textContent = Math.round(jobCreation) + " Families";
-    if (elements.frameworkValExports) elements.frameworkValExports.textContent = "₹" + Math.round(carbonCredits) + " Cr";
-    if (elements.frameworkValPpp) elements.frameworkValPpp.textContent = "₹" + Math.round(partnershipFunding).toLocaleString() + " L";
-    if (elements.frameworkValTotalInv) elements.frameworkValTotalInv.textContent = "₹" + Math.round(budgetAllocation).toLocaleString() + " L";
+    const honeyYield = Math.round(honeyCollectors * (0.025 + (mangroves / 100) * 0.018));
+    if (elements.showcaseHoneyYield) elements.showcaseHoneyYield.textContent = honeyYield.toLocaleString() + " Metric Tonnes";
 
-    // Dynamic Chart updates
-    updateChartsData(tigerIndex, canopyCover, salinity, patrols);
-  }
+    const honeyPrice = Math.round(350 + (livelihoods / 100) * 180 + (conservation / 100) * 70);
+    if (elements.showcaseHoneyPrice) elements.showcaseHoneyPrice.textContent = "₹" + honeyPrice + " / kg average";
 
-  function adjustLogisticsAnimationSpeed(patrolsVal) {
-    elements.logisticsPaths.forEach(path => {
-      let duration = 4.0 - (patrolsVal / 100) * 3.7;
-      path.style.animationDuration = duration.toFixed(2) + "s";
+    const crabCoops = Math.round(150 + (livelihoods / 100) * 280);
+    if (elements.showcaseCrabCoops) elements.showcaseCrabCoops.textContent = crabCoops.toLocaleString() + "+ Small Groups";
+
+    const crabOutput = (crabCoops * 0.063).toFixed(1);
+    if (elements.showcaseCrabOutput) elements.showcaseCrabOutput.textContent = crabOutput + " Tonnes export-grade";
+
+    const crabRevenue = Math.round(7500 + (livelihoods / 100) * 7500);
+    if (elements.showcaseCrabRevenue) elements.showcaseCrabRevenue.textContent = "₹" + crabRevenue.toLocaleString() + " / month";
+
+    const paddyArea = Math.round((6000 + (livelihoods / 100) * 9000) * (0.4 + (embankments / 100) * 0.6));
+    if (elements.showcasePaddyArea) elements.showcasePaddyArea.textContent = paddyArea.toLocaleString() + " Hectares";
+
+    const paddyYield = (1.8 + (livelihoods / 100) * 1.2).toFixed(1);
+    if (elements.showcasePaddyYield) elements.showcasePaddyYield.textContent = paddyYield + " Tonnes / Hectare";
+
+    const paddyTolerance = (8.0 + (livelihoods / 100) * 6.0).toFixed(1);
+    if (elements.showcasePaddyTolerance) elements.showcasePaddyTolerance.textContent = "Up to " + paddyTolerance + " dS/m";
+
+    // Dynamic SVG updates
+    // Core mangrove greening
+    const coreColorValue = Math.round(150 + (mangroves / 100) * 105);
+    const bufferColorValue = Math.round(148 + (mangroves / 100) * 60);
+    const coreZone = document.getElementById("sb-zone-core");
+    const bufferZone = document.getElementById("sb-zone-buffer");
+    if (coreZone) coreZone.style.fill = `rgb(5, ${coreColorValue}, 105)`;
+    if (bufferZone) bufferZone.style.fill = `rgb(13, ${bufferColorValue}, 136)`;
+    
+    // Embankments visual thickness and color scaling
+    const embStrokeColor = embankments > 70 ? "#10b981" : embankments > 40 ? "#fbbf24" : "#ef4444";
+    const embStrokeWidth = 2 + (embankments / 100) * 6;
+    if (elements.embankmentLeft) {
+      elements.embankmentLeft.setAttribute("stroke", embStrokeColor);
+      elements.embankmentLeft.setAttribute("stroke-width", embStrokeWidth);
+      elements.embankmentLeft.style.strokeDasharray = embankments > 60 ? "none" : "8, 4";
+    }
+    if (elements.embankmentRight) {
+      elements.embankmentRight.setAttribute("stroke", embStrokeColor);
+      elements.embankmentRight.setAttribute("stroke-width", embStrokeWidth);
+      elements.embankmentRight.style.strokeDasharray = embankments > 60 ? "none" : "8, 4";
+    }
+
+    // Solar microgrid nodes visibility
+    elements.solarNodes.forEach(node => {
+      if (node) {
+        node.style.fillOpacity = 0.2 + (solar / 100) * 0.8;
+        node.style.filter = solar > 50 ? "drop-shadow(0 0 4px #fbbf24)" : "none";
+      }
     });
+
+    // Update charts dynamically with new simulation inputs
+    updateChartsData(resilienceVal, tigerImpact, mangroves, conservation);
   }
 
+  // Initialize Chart.js
   function initCharts() {
-    const ctxProd = document.getElementById("neProdChart");
-    const ctxFarming = document.getElementById("neFarmingChart");
+    const ctxResilience = document.getElementById("sbResilienceChart");
+    const ctxSpecies = document.getElementById("sbSpeciesChart");
     
-    if (!ctxProd || !ctxFarming) return;
+    if (!ctxResilience || !ctxSpecies) return;
 
-    // Tiger vs Prey (Over 10 Years)
-    charts.prod = new Chart(ctxProd, {
+    // Resilience Line Chart
+    charts.resilience = new Chart(ctxResilience, {
       type: "line",
       data: {
-        labels: ["Yr 1", "Yr 2", "Yr 3", "Yr 4", "Yr 5", "Yr 6", "Yr 7", "Yr 8", "Yr 9", "Yr 10"],
+        labels: ["2026", "2027", "2028", "2029", "2030"],
         datasets: [
           {
-            label: "Bengal Tiger Count",
-            data: [95, 98, 102, 105, 110, 115, 120, 124, 128, 132],
-            borderColor: "#ea580c",
-            backgroundColor: "rgba(234, 88, 12, 0.15)",
-            borderWidth: 2,
-            tension: 0.35,
-            fill: true
+            label: "Storm Resilience Index (%)",
+            data: [25, 30, 35, 40, 45],
+            borderColor: "#3b82f6",
+            backgroundColor: "rgba(59, 130, 246, 0.1)",
+            fill: true,
+            tension: 0.3
           },
           {
-            label: "Spotted Deer Index (Prey)",
-            data: [2500, 2400, 2420, 2450, 2480, 2520, 2600, 2650, 2700, 2720],
-            borderColor: "#10b981",
-            backgroundColor: "transparent",
-            borderWidth: 1.5,
-            tension: 0.35,
-            yAxisID: "yPrey"
+            label: "Flood Inundation Vulnerability (%)",
+            data: [80, 75, 70, 65, 60],
+            borderColor: "#ef4444",
+            backgroundColor: "rgba(239, 68, 68, 0.05)",
+            fill: true,
+            tension: 0.3
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              color: "#9ca3af",
+              font: { family: "Outfit", size: 9 }
+            }
+          }
+        },
         scales: {
-          y: {
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
-            ticks: { color: "#9ca3af", font: { family: "Outfit", size: 9 } }
-          },
-          yPrey: {
-            position: "right",
-            grid: { drawOnChartArea: false },
-            ticks: { color: "#9ca3af", font: { family: "Outfit", size: 9 } }
-          },
           x: {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: { color: "#9ca3af", font: { family: "Outfit", size: 9 } }
-          }
-        },
-        plugins: {
-          legend: {
-            labels: { color: "#9ca3af", font: { family: "Outfit", size: 10 } }
+          },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: { color: "#9ca3af", font: { family: "Outfit", size: 9 } },
+            min: 0,
+            max: 100
           }
         }
       }
     });
 
-    // Mangrove Species Distribution
-    charts.farming = new Chart(ctxFarming, {
+    // Species Bar Chart
+    charts.species = new Chart(ctxSpecies, {
       type: "bar",
       data: {
-        labels: ["Sundari (Heritiera)", "Gewa (Excoecaria)", "Kankra (Bruguiera)", "Gororan (Ceriops)"],
+        labels: ["Royal Bengal Tiger", "Estuarine Crocodile", "River Terrapin"],
         datasets: [{
-          label: "Salt-tolerance Relative Index",
-          data: [4.5, 6.8, 8.2, 9.5],
+          label: "Relative Population Index",
+          data: [88, 80, 65],
           backgroundColor: [
-            "rgba(16, 185, 129, 0.65)", // Low tolerance
-            "rgba(14, 165, 233, 0.65)",
-            "rgba(139, 92, 246, 0.65)",
-            "rgba(234, 88, 12, 0.65)"   // High tolerance
+            "rgba(245, 158, 11, 0.6)",  // Amber (Tiger)
+            "rgba(16, 185, 129, 0.6)",  // Emerald (Crocodile)
+            "rgba(6, 182, 212, 0.6)"    // Cyan (Terrapin)
           ],
-          borderColor: "rgba(255, 255, 255, 0.1)",
-          borderWidth: 1
+          borderColor: [
+            "#f59e0b",
+            "#10b981",
+            "#06b6d4"
+          ],
+          borderWidth: 1.5
         }]
       },
       options: {
@@ -494,7 +491,9 @@
           },
           y: {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
-            ticks: { color: "#9ca3af", font: { family: "Outfit", size: 9 } }
+            ticks: { color: "#9ca3af", font: { family: "Outfit", size: 9 } },
+            min: 0,
+            max: 150
           }
         },
         plugins: {
@@ -504,44 +503,40 @@
     });
   }
 
-  function updateChartsData(tigerIndex, canopyCover, salinity, patrols) {
-    if (!charts.prod || !charts.farming) return;
+  // Update dynamic datasets on the charts
+  function updateChartsData(resilienceVal, tigerVal, mangroves, conservation) {
+    if (!charts.resilience || !charts.species) return;
 
-    // Calculate progression based on active policies
-    let curTiger = Math.round(tigerIndex * 0.85);
-    const tigerTrend = [];
-    const deerTrend = [];
+    // Resilience trend projections
+    const resBase = resilienceVal;
+    const resProj = [
+      resBase * 0.7,
+      resBase * 0.8,
+      resBase * 0.9,
+      resBase * 0.95,
+      resBase
+    ];
+    const vulnProj = resProj.map(v => 100 - v);
     
-    for (let i = 0; i < 10; i++) {
-      curTiger += Math.round((patrols - 25) * 0.08 + (replanting - salinity) * 0.02);
-      tigerTrend.push(Math.max(50, curTiger));
-      
-      const deer = Math.round(2200 + curTiger * 1.5 + (replanting * 4.5));
-      deerTrend.push(deer);
-    }
+    charts.resilience.data.datasets[0].data = resProj.map(v => parseFloat(v.toFixed(1)));
+    charts.resilience.data.datasets[1].data = vulnProj.map(v => parseFloat(v.toFixed(1)));
 
-    charts.prod.data.datasets[0].data = tigerTrend;
-    charts.prod.data.datasets[1].data = deerTrend;
+    // Species scaling
+    const crocVal = 80 + (mangroves / 100) * 35 + (conservation / 100) * 15;
+    const terrapinVal = 65 + (mangroves / 100) * 45;
 
-    // Species distribution varies with salinity levels
-    // Sundari declines as salinity PPT goes above 12, others adjust
-    const sundari = Math.max(0.5, 9.0 - (salinity / 45) * 8.5);
-    const gewa = Math.max(1.5, 8.5 - (salinity / 45) * 3.5);
-    const kankra = Math.min(10.0, 3.5 + (salinity / 45) * 5.5);
-    const goran = Math.min(10.0, 2.0 + (salinity / 45) * 7.5);
-
-    charts.farming.data.datasets[0].data = [
-      parseFloat(sundari.toFixed(1)),
-      parseFloat(gewa.toFixed(1)),
-      parseFloat(kankra.toFixed(1)),
-      parseFloat(goran.toFixed(1))
+    charts.species.data.datasets[0].data = [
+      tigerVal,
+      parseFloat(crocVal.toFixed(1)),
+      parseFloat(terrapinVal.toFixed(1))
     ];
 
-    charts.prod.update("none");
-    charts.farming.update("none");
+    // Trigger charts draw
+    charts.resilience.update("none");
+    charts.species.update("none");
   }
 
-  // Run on load
+  // Run on page load
   document.addEventListener("DOMContentLoaded", init);
 
 })();
